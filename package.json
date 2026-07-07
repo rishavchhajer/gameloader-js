@@ -1,0 +1,37 @@
+{
+  "name": "gameloader-js",
+  "version": "1.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rishavchhajer/gameloader-js.git"
+  },
+  "homepage": "https://github.com/rishavchhajer/gameloader-js#readme",
+  "description": "A plug-and-play gamified loading screen library. Let users play mini-games (dino runner, tetris, shooter, archery) while your content loads.",
+  "main": "dist/gameloader.umd.js",
+  "module": "dist/gameloader.esm.js",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "serve": "npx http-server -p 8080 -c-1 ."
+  },
+  "keywords": [
+    "loader",
+    "loading",
+    "spinner",
+    "game",
+    "gamification",
+    "tetris",
+    "dino",
+    "preloader"
+  ],
+  "license": "MIT",
+  "author": "rishavchhajer",
+  "devDependencies": {
+    "rollup": "^4.18.0",
+    "@rollup/plugin-terser": "^0.4.4"
+  }
+}

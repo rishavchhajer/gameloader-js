@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GameLoader.js Demo</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f4f4f4;
+      color: #222;
+    }
+    h1 { font-size: 24px; }
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 24px 0;
+    }
+    select, button {
+      font-size: 15px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+    button.primary {
+      background: #35d07f;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+    }
+    code { background: #e8e8e8; padding: 2px 6px; border-radius: 4px; }
+    pre { background: #1c1c1c; color: #d8d8d8; padding: 16px; border-radius: 8px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>🎮 GameLoader.js Demo</h1>
+  <p>
+    A plug-and-play gamified loading screen. The integrating developer picks
+    <strong>one game</strong> via config; users play it while content loads.
+  </p>
+
+  <div class="controls">
+    <label for="game">Game:</label>
+    <select id="game">
+      <option value="dino">Dino Runner</option>
+      <option value="tetris">Tetris</option>
+      <option value="shooter">Shooter</option>
+      <option value="archery">Archery</option>
+    </select>
+    <button class="primary" id="start">Simulate 20s load</button>
+    <button id="wrap">GameLoader.wrap(fetch)</button>
+  </div>
+
+  <h3>Integration</h3>
+  <pre>&lt;script src="dist/gameloader.umd.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const loader = GameLoader.init({ game: 'dino' });
+  loader.show();
+  loader.setProgress(40);   // optional
+  loader.hide();            // when your content is ready
+&lt;/script&gt;</pre>
+
+  <script src="../dist/gameloader.umd.js"></script>
+  <script>
+    document.getElementById('start').addEventListener('click', () => {
+      const loader = GameLoader.init({
+        game: document.getElementById('game').value,
+        message: 'Loading your content...',
+        showProgress: true,
+        highScores: true,
+        minDisplayTime: 1000,
+      });
+      loader.show();
+
+      // simulate a 20 second load with progress updates
+      let pct = 0;
+      const iv = setInterval(() => {
+        pct += 1;
+        loader.setProgress(pct);
+        if (pct >= 100) {
+          clearInterval(iv);
+          loader.hide();
+        }
+      }, 200);
+    });
+
+    document.getElementById('wrap').addEventListener('click', () => {
+      // Promise-based usage: shows on start, hides when the promise settles
+      const slowTask = new Promise((res) => setTimeout(res, 15000));
+      GameLoader.wrap(slowTask, {
+        game: document.getElementById('game').value,
+        message: 'Fetching data...',
+        showProgress: false,
+      }).then(() => console.log('done!'));
+    });
+  </script>
+</body>
+</html>

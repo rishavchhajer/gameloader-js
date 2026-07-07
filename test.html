@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GameLoader.js — Test Page</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 820px;
+      margin: 32px auto;
+      padding: 0 20px;
+      background: #f4f4f4;
+      color: #222;
+    }
+    h1 { font-size: 22px; }
+    fieldset {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin: 16px 0;
+      padding: 16px;
+      background: #fff;
+    }
+    legend { font-weight: 600; padding: 0 8px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+    label { font-size: 14px; }
+    select, input, button {
+      font-size: 14px;
+      padding: 7px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    input[type="number"] { width: 90px; }
+    input[type="color"] { padding: 2px; width: 44px; height: 34px; }
+    button { cursor: pointer; background: #fff; }
+    button.primary { background: #35d07f; color: #fff; border: none; font-weight: 600; }
+    button.danger { background: #ff5a5a; color: #fff; border: none; }
+    #container-target {
+      position: relative;
+      height: 480px;
+      border: 2px dashed #999;
+      border-radius: 8px;
+      display: none;
+      overflow: hidden;
+    }
+    #log {
+      background: #1c1c1c; color: #8f8;
+      font-family: monospace; font-size: 12px;
+      padding: 12px; border-radius: 8px;
+      height: 140px; overflow-y: auto; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 GameLoader.js Test Page</h1>
+
+  <fieldset>
+    <legend>Config</legend>
+    <div class="row">
+      <label>Game:
+        <select id="game">
+          <option value="dino">dino</option>
+          <option value="tetris">tetris</option>
+          <option value="shooter">shooter</option>
+          <option value="archery">archery</option>
+        </select>
+      </label>
+      <label>Message: <input type="text" id="message" value="Loading..." /></label>
+      <label>Min display (ms): <input type="number" id="minDisplay" value="0" step="500" /></label>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="showProgress" checked /> showProgress</label>
+      <label><input type="checkbox" id="highScores" checked /> highScores</label>
+      <label><input type="checkbox" id="useContainer" /> mount in container (not fullscreen)</label>
+      <label>Accent: <input type="color" id="accent" value="#35d07f" /></label>
+      <label>Bg: <input type="color" id="bg" value="#101418" /></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Test 1 — Manual show / progress / hide</legend>
+    <div class="row">
+      <button class="primary" id="btnShow">show()</button>
+      <button id="btnProgress">setProgress(+10)</button>
+      <button id="btnMessage">setMessage(random)</button>
+      <button class="danger" id="btnHide">hide()</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Test 2 — Simulated load with auto progress</legend>
+    <div class="row">
+      <label>Duration:
+        <select id="duration">
+          <option value="5000">5s</option>
+          <option value="15000" selected>15s</option>
+          <option value="30000">30s</option>
+          <option value="60000">60s</option>
+        </select>
+      </label>
+      <button class="primary" id="btnSimulate">Simulate load</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Test 3 — GameLoader.wrap(promise)</legend>
+    <div class="row">
+      <button class="primary" id="btnWrap">wrap(10s promise)</button>
+      <button id="btnWrapReject">wrap(5s rejecting promise)</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Test 4 — Error handling</legend>
+    <div class="row">
+      <button id="btnNoGame">init({}) — missing game</button>
+      <button id="btnBadGame">init({game:'pacman'}) — invalid game</button>
+    </div>
+  </fieldset>
+
+  <div id="container-target"></div>
+
+  <fieldset>
+    <legend>Log</legend>
+    <div id="log"></div>
+  </fieldset>
+
+  <script src="dist/gameloader.umd.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const logEl = $('log');
+    function log(msg, isErr) {
+      const line = document.createElement('div');
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      if (isErr) line.style.color = '#f88';
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    log('GameLoader loaded. Available games: ' + GameLoader.games.join(', '));
+
+    function buildOptions() {
+      const useContainer = $('useContainer').checked;
+      const containerEl = $('container-target');
+      containerEl.style.display = useContainer ? 'block' : 'none';
+      return {
+        game: $('game').value,
+        message: $('message').value,
+        showProgress: $('showProgress').checked,
+        highScores: $('highScores').checked,
+        minDisplayTime: parseInt($('minDisplay').value, 10) || 0,
+        container: useContainer ? containerEl : null,
+        theme: { accent: $('accent').value, bg: $('bg').value },
+      };
+    }
+
+    let loader = null;
+    let progress = 0;
+
+    // ---- Test 1: manual ----
+    $('btnShow').onclick = () => {
+      if (loader && loader.visible) return log('already visible — hide() first', true);
+      progress = 0;
+      loader = GameLoader.init(buildOptions());
+      loader.show();
+      log(`show() — game=${$('game').value}`);
+    };
+    $('btnProgress').onclick = () => {
+      if (!loader || !loader.visible) return log('not visible — show() first', true);
+      progress = Math.min(100, progress + 10);
+      loader.setProgress(progress);
+      log(`setProgress(${progress})`);
+    };
+    $('btnMessage').onclick = () => {
+      if (!loader || !loader.visible) return log('not visible — show() first', true);
+      const msgs = ['Crunching data...', 'Almost there...', 'Reticulating splines...', 'Warming up...'];
+      const m = msgs[(Math.random() * msgs.length) | 0];
+      loader.setMessage(m);
+      log(`setMessage("${m}")`);
+    };
+    $('btnHide').onclick = async () => {
+      if (!loader || !loader.visible) return log('not visible', true);
+      log('hide() called...');
+      await loader.hide();
+      log('hide() resolved — cleaned up');
+    };
+
+    // ---- Test 2: simulated load ----
+    $('btnSimulate').onclick = () => {
+      if (loader && loader.visible) return log('already visible — hide() first', true);
+      const duration = parseInt($('duration').value, 10);
+      loader = GameLoader.init(buildOptions());
+      loader.show();
+      log(`simulating ${duration / 1000}s load...`);
+      const started = Date.now();
+      const iv = setInterval(async () => {
+        const pct = Math.min(100, ((Date.now() - started) / duration) * 100);
+        loader.setProgress(pct);
+        if (pct >= 100) {
+          clearInterval(iv);
+          await loader.hide();
+          log('simulated load complete — loader hidden');
+        }
+      }, 200);
+    };
+
+    // ---- Test 3: wrap ----
+    $('btnWrap').onclick = async () => {
+      log('wrap(10s promise) — loader shows now, hides on resolve');
+      const result = await GameLoader.wrap(
+        new Promise((res) => setTimeout(() => res('hello!'), 10000)),
+        buildOptions()
+      );
+      log(`wrap resolved with: "${result}"`);
+    };
+    $('btnWrapReject').onclick = async () => {
+      log('wrap(5s rejecting promise) — loader must still hide');
+      try {
+        await GameLoader.wrap(
+          new Promise((_, rej) => setTimeout(() => rej(new Error('boom')), 5000)),
+          buildOptions()
+        );
+      } catch (e) {
+        log(`wrap rejected as expected: ${e.message}`);
+      }
+    };
+
+    // ---- Test 4: errors ----
+    $('btnNoGame').onclick = () => {
+      try { GameLoader.init({}); log('FAIL: no error thrown', true); }
+      catch (e) { log('OK, threw: ' + e.message); }
+    };
+    $('btnBadGame').onclick = () => {
+      try { GameLoader.init({ game: 'pacman' }); log('FAIL: no error thrown', true); }
+      catch (e) { log('OK, threw: ' + e.message); }
+    };
+  </script>
+</body>
+</html>
