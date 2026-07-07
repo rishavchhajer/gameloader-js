@@ -28,6 +28,8 @@ export class Overlay {
    */
   constructor({ container, theme, message, showProgress, canvasW, canvasH }) {
     this.container = container;
+    this.canvasW = canvasW;
+    this.canvasH = canvasH;
     this.host = document.createElement('div');
     this.host.setAttribute('data-gameloader', '');
     this.shadow = this.host.attachShadow({ mode: 'open' });
@@ -57,12 +59,12 @@ export class Overlay {
     this.root.appendChild(this.scoresEl);
 
     // canvas
-    const wrap = document.createElement('div');
-    wrap.className = 'gl-canvas-wrap';
-    wrap.style.width = canvasW + 'px';
+    this.wrap = document.createElement('div');
+    this.wrap.className = 'gl-canvas-wrap';
+    this.wrap.style.width = canvasW + 'px';
     this.canvas = document.createElement('canvas');
-    wrap.appendChild(this.canvas);
-    this.root.appendChild(wrap);
+    this.wrap.appendChild(this.canvas);
+    this.root.appendChild(this.wrap);
 
     // progress
     this.progress = null;
@@ -100,12 +102,61 @@ export class Overlay {
     // force reflow so the transition plays
     void this.root.offsetHeight;
     this.root.classList.add('gl-visible');
+
+    // Scale the game box to fit the overlay (container or viewport),
+    // re-fitting whenever the overlay resizes.
+    this._fit();
+    if (typeof ResizeObserver !== 'undefined') {
+      this._ro = new ResizeObserver(() => this._fit());
+      this._ro.observe(this.root);
+    } else {
+      this._onResize = () => this._fit();
+      window.addEventListener('resize', this._onResize);
+    }
+  }
+
+  /**
+   * Shrink the canvas box so the whole overlay (message, scores, canvas,
+   * progress, hint) fits inside the available height and width. The canvas
+   * keeps its aspect ratio; its internal resolution is untouched (CSS-only
+   * scaling), so games and input mapping are unaffected.
+   */
+  _fit() {
+    const rootW = this.root.clientWidth;
+    const rootH = this.root.clientHeight;
+    if (!rootW || !rootH) return;
+
+    // height used by everything except the canvas box
+    let otherH = 0;
+    let items = 0;
+    for (const el of this.root.children) {
+      items++;
+      if (el !== this.wrap) otherH += el.offsetHeight;
+    }
+    const gap = 16; // matches .gl-overlay gap
+    const padding = 24;
+    const availH = rootH - otherH - gap * (items - 1) - padding;
+    const availW = rootW - 32;
+    const scale = Math.max(
+      0.3,
+      Math.min(1, availW / this.canvasW, availH / this.canvasH)
+    );
+    const w = Math.floor(this.canvasW * scale);
+    if (this.wrap.style.width !== w + 'px') this.wrap.style.width = w + 'px';
   }
 
   /**
    * Fade out, then remove from DOM. Resolves when done.
    */
   unmount() {
+    if (this._ro) {
+      this._ro.disconnect();
+      this._ro = null;
+    }
+    if (this._onResize) {
+      window.removeEventListener('resize', this._onResize);
+      this._onResize = null;
+    }
     return new Promise((resolve) => {
       this.root.classList.remove('gl-visible');
       const done = () => {

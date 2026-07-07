@@ -15,6 +15,9 @@ content loads.
 | `tetris`  | Tetris      | ←→ move, ↑ rotate, ↓ soft drop, Space hard drop | Tap sides/middle, swipe down      |
 | `shooter` | Shooter     | ←→/A-D move, Space shoot                 | Drag to move (auto-fire)                |
 | `archery` | Archery     | Hold Space to draw, release to shoot, ↑↓ aim | Hold to draw, release to shoot      |
+| `snake`   | Snake       | Arrows/WASD to steer                     | Swipe to turn                           |
+| `pacman`  | Pacman      | Arrows/WASD to steer                     | Swipe to turn                           |
+| `roadfighter` | Road Fighter | ←→ steer, ↑ accelerate, ↓ brake      | Drag to steer (auto-accelerate)         |
 
 ## Install
 
@@ -39,7 +42,7 @@ const loader = GameLoader.init({ game: 'tetris' });
 
 ```js
 const loader = GameLoader.init({
-  game: 'dino',              // REQUIRED: 'dino' | 'tetris' | 'shooter' | 'archery'
+  game: 'dino',              // REQUIRED: 'dino' | 'tetris' | 'shooter' | 'archery' | 'snake' | 'pacman' | 'roadfighter'
   container: document.body,  // optional: element to mount in (default: fullscreen)
   message: 'Loading...',     // optional: heading text
   showProgress: true,        // optional: progress bar (indeterminate until setProgress)
