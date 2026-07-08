@@ -5,6 +5,7 @@ import { ArcheryGame } from './archery.js';
 import { SnakeGame } from './snake.js';
 import { PacmanGame } from './pacman.js';
 import { RoadFighterGame } from './roadfighter.js';
+import { CrosswordGame } from './crossword.js';
 
 export const GAMES = {
   [DinoGame.id]: DinoGame,
@@ -14,6 +15,7 @@ export const GAMES = {
   [SnakeGame.id]: SnakeGame,
   [PacmanGame.id]: PacmanGame,
   [RoadFighterGame.id]: RoadFighterGame,
+  [CrosswordGame.id]: CrosswordGame,
 };
 
 export function getGame(name) {

@@ -18,6 +18,7 @@ content loads.
 | `snake`   | Snake       | Arrows/WASD to steer                     | Swipe to turn                           |
 | `pacman`  | Pacman      | Arrows/WASD to steer                     | Swipe to turn                           |
 | `roadfighter` | Road Fighter | ←→ steer, ↑ accelerate, ↓ brake      | Drag to steer (auto-accelerate)         |
+| `crossword` | Crossword   | Click cell + type, Space = row/col       | Tap cell + on-screen keyboard           |
 
 ## Install
 
@@ -42,7 +43,7 @@ const loader = GameLoader.init({ game: 'tetris' });
 
 ```js
 const loader = GameLoader.init({
-  game: 'dino',              // REQUIRED: 'dino' | 'tetris' | 'shooter' | 'archery' | 'snake' | 'pacman' | 'roadfighter'
+  game: 'dino',              // REQUIRED: 'dino' | 'tetris' | 'shooter' | 'archery' | 'snake' | 'pacman' | 'roadfighter' | 'crossword'
   container: document.body,  // optional: element to mount in (default: fullscreen)
   message: 'Loading...',     // optional: heading text
   showProgress: true,        // optional: progress bar (indeterminate until setProgress)
