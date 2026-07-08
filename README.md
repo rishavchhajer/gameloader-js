@@ -22,22 +22,29 @@ content loads.
 
 ## Install
 
-**Script tag (UMD):**
+**CDN (script tag, UMD):**
 
 ```html
-<script src="dist/gameloader.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gameloader-js/dist/gameloader.umd.min.js"></script>
 <script>
   const loader = GameLoader.init({ game: 'dino' });
   loader.show();
 </script>
 ```
 
-**ES module:**
+**npm:**
+
+```bash
+npm install gameloader-js
+```
 
 ```js
-import GameLoader from './dist/gameloader.esm.min.js';
+import GameLoader from 'gameloader-js';
 const loader = GameLoader.init({ game: 'tetris' });
 ```
+
+**Self-hosted:** copy `dist/gameloader.umd.min.js` (or the `.esm` build) into
+your assets and reference it directly.
 
 ## Usage
 
@@ -77,7 +84,11 @@ const data = await GameLoader.wrap(fetch('/api/data'), { game: 'shooter' });
 - Passing an invalid/missing `game` throws with the list of valid options.
 - When using a custom `container`, give it `position: relative` — the overlay
   is absolutely positioned inside it.
+- The game box auto-scales (aspect ratio preserved) to fit the container or
+  viewport, and re-fits on resize — tall games work in short containers.
 - All styles live in Shadow DOM; your site's CSS is never affected.
+- Works on desktop and mobile: every game has both keyboard and touch
+  controls (crossword ships its own on-screen keyboard).
 
 ## Development
 
@@ -86,6 +97,29 @@ npm install
 npm run build     # builds dist/ (UMD + ESM, minified variants)
 npm run serve     # serve repo root, open http://localhost:8080/demo/
 ```
+
+`test.html` in the repo root is an interactive test bench covering every
+config option, the promise wrapper, and error handling.
+
+## Changelog
+
+### 1.2.0
+- New game: **crossword** (word-square puzzles, on-screen keyboard for touch)
+
+### 1.1.0
+- New games: **snake**, **pacman**, **roadfighter**
+- Overlay auto-scales the game box to fit small containers / short viewports
+- Fixes: road fighter speed cap, overlapping spawns, traffic cleanup while
+  braking; pacman ghost-farming exploit
+
+### 1.0.1
+- Fixes: `hide()` re-entrancy crash, NaN touch coordinates on `touchend`,
+  restart double-firing game actions, unreachable bird hitbox in dino,
+  unbounded array growth in archery
+
+### 1.0.0
+- Initial release: dino, tetris, shooter, archery; progress bar, theming,
+  high scores, promise wrapper, Shadow DOM isolation
 
 ## License
 
