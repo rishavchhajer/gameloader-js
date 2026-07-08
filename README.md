@@ -103,6 +103,10 @@ config option, the promise wrapper, and error handling.
 
 ## Changelog
 
+### 1.2.1
+- Crossword UX: how-to-play intro, pre-filled starter letters, always-visible
+  row+column clues, HINT key (3 per puzzle), blinking cursor
+
 ### 1.2.0
 - New game: **crossword** (word-square puzzles, on-screen keyboard for touch)
 
